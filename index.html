@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track and monitor GPS-enabled devices in real-time. Perfect for parental control and asset tracking.">
+    <meta name="keywords" content="gps tracker, location tracking, parental control, smartwatch tracker, real-time tracking">
+    <title>GTrackGuard - GPS Tracking Solution | Monitor Devices in Real-time</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --primary: #2c6fd1;
+            --secondary: #1a3a6d;
+            --accent: #ff6b35;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .logo i {
+            color: var(--accent);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        nav a:hover, nav a.active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-selector {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .main-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            flex: 0 0 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1.2rem 1.5rem;
+            background: var(--light);
+            border-bottom: 1px solid var(--light-gray);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .map-container {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .device-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .device-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .device-item:hover {
+            background: var(--light-gray);
+        }
+        
+        .device-item.active {
+            border-left: 4px solid var(--primary);
+            background: #e3eeff;
+        }
+        
+        .device-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        
+        .device-info {
+            flex: 1;
+        }
+        
+        .device-name {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        
+        .device-status {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .status-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-online {
+            background: rgba(76, 175, 80, 0.15);
+            color: var(--success);
+        }
+        
+        .status-offline {
+            background: rgba(244, 67, 54, 0.15);
+            color: var(--danger);
+        }
+        
+        .battery-low {
+            color: var(--danger);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ad-container {
+            margin: 2rem 0;
+            text-align: center;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .ad-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .ad-placeholder {
+            height: 90px;
+            background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .alert-banner {
+            background: rgba(255, 107, 53, 0.15);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .alert-icon {
+            font-size: 1.5rem;
+            color: var(--accent);
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 2rem 2rem;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--accent);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: #adb5bd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                flex: 0 0 auto;
+            }
+            
+            .map-container {
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem;
+            }
+            
+            nav ul {
+                display: none;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .map-container {
+                height: 350px;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .user-actions {
+                display: none;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .map-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-location-dot"></i>
+                <span>GTrackGuard</span>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#">Devices</a></li>
+                    <li><a href="#">Locations</a></li>
+                    <li><a href="#">Geofences</a></li>
+                    <li><a href="#">Alerts</a></li>
+                    <li><a href="#">History</a></li>
+                    <li><a href="#">Messages</a></li>
+                </ul>
+            </nav>
+            
+            <div class="user-actions">
+                <button class="btn btn-outline">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn btn-outline">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <select class="language-selector">
+                    <option>EN</option>
+                    <option>ES</option>
+                    <option>FR</option>
+                    <option>DE</option>
+                </select>
+                <button class="btn btn-primary">
+                    <i class="fas fa-user"></i> My Account
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <span>My Devices</span>
+                    <button class="btn btn-primary" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="device-list">
+                        <div class="device-item active">
+                            <div class="device-icon">
+                                <i class="fas fa-watch"></i>
+                            </div>
+                            <div class="device-info">
+                                <div class="device-name">Emily's Smartwatch</div>
+                                <div class="device-status">
+                                    <span class="status-badge status-online">Online</span>
+                                    <span><i class="fas fa-battery-three-quarters"></i> 78%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="device-item">
+                            <div class="device-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="device-info">
+                                <div class="device-name">John's Phone</div>
+                                <div class="device-status">
+                                    <span class="status-badge status-online">Online</span>
+                                    <span><i class="fas fa-battery-half"></i> 52%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="device-item">
+                            <div class="device-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="device-info">
+                                <div class="device-name">Family Car</div>
+                                <div class="device-status">
+                                    <span class="status-badge status-offline">Offline</span>
+                                    <span><i class="fas fa-battery-quarter battery-low"></i> 18%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ad-container">
+                <div class="ad-label">Advertisement</div>
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i> Google AdSense Ad
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <span>Quick Actions</span>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.8rem;">
+                        <i class="fas fa-map-marker-alt"></i> Set Geofence
+                    </button>
+                    <button class="btn" style="width: 100%; margin-bottom: 0.8rem; background: var(--light);">
+                        <i class="fas fa-history"></i> View History
+                    </button>
+                    <button class="btn" style="width: 100%; background: var(--light);">
+                        <i class="fas fa-bell"></i> Manage Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Alert Banner -->
+            <div class="alert-banner">
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <strong>Emergency Alert!</strong> Emily pressed the SOS button at 14:23. 
+                    <a href="#" style="color: var(--accent); text-decoration: underline; margin-left: 0.5rem;">View Location</a>
+                </div>
+            </div>
+            
+            <!-- Stats Overview -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Active Devices</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Geofences</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Active Alerts</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="stat-value">87</div>
+                    <div class="stat-label">Locations Today</div>
+                </div>
+            </div>
+            
+            <!-- Map -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Real-time Location Tracking</span>
+                    <div>
+                        <button class="btn" style="background: var(--light); margin-right: 0.5rem;">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="btn" style="background: var(--light);">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Tracking Features</span>
+                </div>
+                <div class="card-body">
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-fence"></i>
+                            </div>
+                            <div class="feature-title">Geofencing</div>
+                            <p>Create safe zones and get alerts when devices enter or leave these areas</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="feature-title">Location History</div>
+                            <p>View historical routes and playback device movements over time</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="feature-title">SOS Alerts</div>
+                            <p>Instant notifications when emergency button is pressed on devices</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-comment-alt"></i>
+                            </div>
+                            <div class="feature-title">Two-way Communication</div>
+                            <p>Send messages or trigger voice calls directly to the device</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ad Container -->
+            <div class="ad-container">
+                <div class="ad-label">Advertisement</div>
+                <div class="ad-placeholder">
+                    <i class="fas fa-ad"></i> Google AdSense Ad
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>TrackGuard</h3>
+                <p>Advanced GPS tracking solutions for families and businesses. Monitor your loved ones and assets in real-time with our secure platform.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Devices</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">GDPR Compliance</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-envelope"></i> support@trackguard.com</li>
+                    <li><i class="fas fa-phone"></i> +1 (800) 123-4567</li>
+                    <li><i class="fas fa-map-marker-alt"></i> San Francisco, CA</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            &copy; 2023 TrackGuard. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Initialize the map
+        function initMap() {
+            // Default coordinates (San Francisco)
+            const defaultCoords = [37.7749, -122.4194];
+            
+            // Create map
+            const map = L.map('map').setView(defaultCoords, 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add marker with custom icon
+            const icon = L.divIcon({
+                className: 'custom-icon',
+                html: '<div style="background: #2c6fd1; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"><i class="fas fa-user" style="color: white; font-size: 16px;"></i></div>',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            
+            // Add marker
+            const marker = L.marker(defaultCoords, {icon: icon}).addTo(map);
+            
+            // Add circle for accuracy
+            const circle = L.circle(defaultCoords, {
+                color: 'rgba(44, 111, 209, 0.2)',
+                fillColor: 'rgba(44, 111, 209, 0.2)',
+                fillOpacity: 0.5,
+                radius: 100
+            }).addTo(map);
+            
+            // Add popup
+            marker.bindPopup("<b>Emily's Smartwatch</b><br>Current location").openPopup();
+            
+            // Simulate movement
+            setInterval(() => {
+                const lat = defaultCoords[0] + (Math.random() - 0.5) * 0.01;
+                const lng = defaultCoords[1] + (Math.random() - 0.5) * 0.01;
+                const newCoords = [lat, lng];
+                
+                marker.setLatLng(newCoords);
+                circle.setLatLng(newCoords);
+                map.panTo(newCoords);
+            }, 5000);
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            
+            // Device selection
+            const deviceItems = document.querySelectorAll('.device-item');
+            deviceItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    deviceItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // In a real app, this would update the map with the selected device location
+                });
+            });
+            
+            // Simulate battery level changes
+            setInterval(() => {
+                const batteryIcons = document.querySelectorAll('.device-status .fa-battery-three-quarters, .device-status .fa-battery-half, .device-status .fa-battery-quarter');
+                batteryIcons.forEach(icon => {
+                    if (icon.classList.contains('fa-battery-three-quarters')) {
+                        icon.classList.remove('fa-battery-three-quarters');
+                        icon.classList.add('fa-battery-half');
+                    } else if (icon.classList.contains('fa-battery-half')) {
+                        icon.classList.remove('fa-battery-half');
+                        icon.classList.add('fa-battery-quarter');
+                        icon.classList.add('battery-low');
+                    } else {
+                        icon.classList.remove('fa-battery-quarter', 'battery-low');
+                        icon.classList.add('fa-battery-three-quarters');
+                    }
+                });
+            }, 10000);
+        });
+    </script>
+</body>
+</html>
